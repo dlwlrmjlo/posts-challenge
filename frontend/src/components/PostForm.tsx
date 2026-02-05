@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppDispatch } from '../store/hooks';
-import { createPost } from '../store/postSlice';
-import { Send } from 'lucide-react';
+import { addPost } from '../store/postSlice';
+import { postService } from '../services/api';
 
 export const PostForm: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -14,10 +14,20 @@ export const PostForm: React.FC = () => {
         if (!name.trim()) return;
 
         setIsSubmitting(true);
-        await dispatch(createPost({ name, description }));
-        setName('');
-        setDescription('');
-        setIsSubmitting(false);
+        try {
+            // 1. Llamada a API
+            const response = await postService.create({ name, description });
+            // 2. Despachar acción simple a Redux
+            dispatch(addPost(response.data));
+
+            setName('');
+            setDescription('');
+        } catch (error) {
+            console.error('Error creating post:', error);
+            alert('Error al crear el post');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
